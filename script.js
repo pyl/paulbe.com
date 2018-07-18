@@ -1,6 +1,9 @@
 
 // reference to canvas
-var can = document.getElementById("full");
+var can = document.getElementById("can");
+var canv = can.getContext("2d");
+
+
 
 function resizeCanvas() {
   can.style.width = window.innerWidth + "px";
@@ -10,8 +13,13 @@ function resizeCanvas() {
   }, 0);
 };
 
-// Webkit/Blink will fire this on load, but Gecko doesn't.
+
 window.onresize = resizeCanvas;
 
-// So we fire it manually...
+//fire it manually...
 resizeCanvas();
+
+
+
+canv.fillStyle = "blue";
+canv.fillRect(75, 75, 20, 20);

@@ -1,7 +1,7 @@
 
 // reference to canvas
 var canvas = document.querySelector("canvas");
-console.log(canvas);
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -12,20 +12,50 @@ function randomNumber(min,max)
     return (Math.random()*(max-min+1)+min);
 }
 
+//create mouse object
+var mouse = {
+  x: undefined,
+  y: undefined
+}
+
+var colorArray = [
+  "#C84127",
+  "#67C5C2",
+  "#3D2117",
+  "#FEFCE8",
+  "#000000",
+  "",
+];
+
+window.addEventListener("mousemove", function(event) {
+  mouse.x = event.x;
+  mouse.y = event.y;
+})
+
+window.addEventListener("resize", function() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+})
+
+var maxRadius = 50;
+//var minRadius = radius;
 function Circle(x,y,radius,dx,dy) {
 
 
   this.x = x;
   this.y = y;
   this.radius = radius;
+  this.minRadius = radius;
   this.dx = dx;
   this.dy = dy;
-
+  this.color = colorArray[Math.floor(Math.random()*colorArray.length)];
 //template of circle being drawn
   this.draw = function() {
     c.beginPath();
     c.arc(this.x,this.y,this.radius,0,Math.PI*2);
     c.stroke();
+    c.fillStyle = this.color;
+    c.fill();
   }
 
 
@@ -41,6 +71,19 @@ if(this.y+this.radius>innerHeight || this.y - this.radius < 0) {
 this.x+=this.dx;
 this.y+=this.dy;
 
+//interactivity
+
+//when mouse close
+if (mouse.x - this.x < 100 && mouse.x - this.x > -100
+  && mouse.y - this.y < 100 && mouse.y - this.y > -100
+  ) {
+    if (this.radius < maxRadius) {
+      this.radius += 2;
+    }
+} else if (this.radius > this.minRadius) {
+  this.radius -=0.2;
+}
+
   }
 }
 
@@ -49,17 +92,17 @@ this.y+=this.dy;
 
 var circleArray = [];
 
-for (var i = 0; i < 100; i++) {
+for (var i = 0; i < 800; i++) {
 var x = Math.random()*innerWidth;
 var dx = randomNumber(-1,1);
 var y = Math.random()*innerHeight;
 var dy = randomNumber(-1,1);
-var radius = 30;
+var radius = Math.random()*3+2;
 circleArray.push(
   new Circle(x,y,radius,dx,dy))
 }
 
-var circle = new Circle(x,y,radius,dx,dy);
+
 
 function animate() {
   requestAnimationFrame(animate)
@@ -69,8 +112,7 @@ function animate() {
     circleArray[i].draw();
     circleArray[i].update();
   }
-  circle.draw();
-  circle.update();
+
 
 }
 

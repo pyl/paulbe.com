@@ -9,56 +9,68 @@ var c = canvas.getContext("2d");
 
 function randomNumber(min,max)
 {
-    return Math.floor(Math.random()*(max-min+1)+min);
+    return (Math.random()*(max-min+1)+min);
 }
 
-// c.fillRect(100,100,100,100);
-
-//Line
-// c.beginPath();
-// c.moveTo(50,300);
-// c.lineTo(300,100);
-// c.stroke();
+function Circle(x,y,radius,dx,dy) {
 
 
+  this.x = x;
+  this.y = y;
+  this.radius = radius;
+  this.dx = dx;
+  this.dy = dy;
 
-// for (i=0; i<3; i++) {
-//  var x = Math.random()*window.innerWidth;
-//  var y = Math.random()*window.innerHeight;
-//   c.beginPath();
-//   c.arc(x,y,30,0,Math.PI*2, false);
-//   c.stroke();
-// }
-
-
-
-var x = 200;
-var dx = 4;
-var y = 200;
-var dy = 4;
+//template of circle being drawn
+  this.draw = function() {
+    c.beginPath();
+    c.arc(this.x,this.y,this.radius,0,Math.PI*2);
+    c.stroke();
+  }
 
 
+//template of circle movement
+  this.update = function() {
+if(this.x+this.radius>innerWidth || this.x - this.radius < 0) {
+  this.dx=-this.dx;
+}
+
+if(this.y+this.radius>innerHeight || this.y - this.radius < 0) {
+  this.dy=-this.dy;
+}
+this.x+=this.dx;
+this.y+=this.dy;
+
+  }
+}
 
 
 
+
+var circleArray = [];
+
+for (var i = 0; i < 100; i++) {
+var x = Math.random()*innerWidth;
+var dx = randomNumber(-1,1);
+var y = Math.random()*innerHeight;
+var dy = randomNumber(-1,1);
 var radius = 30;
+circleArray.push(
+  new Circle(x,y,radius,dx,dy))
+}
+
+var circle = new Circle(x,y,radius,dx,dy);
+
 function animate() {
   requestAnimationFrame(animate)
   c.clearRect(0,0,innerWidth,innerHeight);
-c.beginPath();
-c.arc(x,y,radius,0,Math.PI*2);
-c.stroke();
 
-if(x+radius>innerWidth || x - radius < 0) {
-  dx=-dx;
-}
-if(y+radius>innerHeight || y - radius < 0) {
-  dy=-dy;
-}
-
-
-x+=dx;
-y+=dy;
+  for (var i = 0; i <circleArray.length; i++) {
+    circleArray[i].draw();
+    circleArray[i].update();
+  }
+  circle.draw();
+  circle.update();
 
 }
 

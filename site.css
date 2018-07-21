@@ -1,10 +1,13 @@
 body {
   margin: 0;
   overflow: hidden;
-
 }
 
 
-canvas {
+canvas#circles {
   background: #e2e1d2;
+}
+
+h1 {
+  position: absolute;
 }

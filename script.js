@@ -23,12 +23,8 @@ canvas.style.position = "absolute";
 
 
 
-
-
-
-
 var canX = window.innerWidth;
-var canY = 300;
+var canY = window.innerHeight;
 
 canvas.width = canX;
 canvas.height = canY;
@@ -65,7 +61,7 @@ window.addEventListener("resize", function() {
   canvas.height = canY;
 })
 
-var maxRadius = 25;
+var maxRadius = 50;
 //var minRadius = radius;
 function Circle(x,y,radius,dx,dy) {
 
@@ -102,8 +98,8 @@ this.y+=this.dy;
 //interactivity
 
 //when mouse close
-if (trueX - this.x < 30 && trueX - this.x > -30
-  && trueY - this.y < 30 && trueY - this.y > -30
+if (trueX - this.x < 100 && trueX - this.x > -100
+  && trueY - this.y < 100 && trueY - this.y > -100
   ) {
     if (this.radius < maxRadius) {
       this.radius += 2;
@@ -140,6 +136,15 @@ function animate() {
     circleArray[i].draw();
     circleArray[i].update();
   }
+
+
+  c.font = "130px Arial";
+  c.textAlign = "center";
+  c.fillText("Bubbles",canX/2,canY/2);
+
+
+
+
 
 
 }

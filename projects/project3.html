@@ -1,0 +1,312 @@
+
+<link rel="stylesheet" href="../css/project3.css"/>
+
+<script language = "javascript" type = "text/javascript" src="../libraries/matter.js"></script>
+<script language = "javascript" type = "text/javascript" src="../libraries/p5.js"></script>
+
+<script>
+
+var up;
+var right;
+var down;
+var left;
+var pressed = 0;
+var circles = [];
+
+
+
+// module aliases
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    World = Matter.World,
+    Bodies = Matter.Bodies;
+
+var engine;
+var world;
+var terrainArray = [];
+var ground;
+var canX = window.innerWidth;
+var canY = window.innerHeight;
+
+function randomNumber(min,max)
+{
+    return (Math.random()*(max-min+1)+min);
+}
+
+function setup(){
+
+
+
+  createCanvas(canX,canY);
+
+  engine = Engine.create();
+  world = engine.world;
+
+  Engine.run(engine);
+  var options = {
+    isStatic : true
+  }
+
+
+doo();
+
+engine.world.gravity.y = 0.7;
+
+}
+
+//higher the #, higher the bar is
+var terrainMinHeight = canY-40;
+var terrainMaxHeight = canY/3
+var j = (10);
+var circleRad = 10;
+var terrainWidth = 300;
+var randY = randomNumber(terrainMaxHeight,terrainMinHeight);
+var difference = 300;
+
+function doo() {
+
+var randYPlus = randY + random(-difference,difference);
+for (var i = 0; i < j; i++) {
+
+  randYPlus += random(-difference,difference);
+
+  terrainArray.push(new Terrain(i*terrainWidth,canY/2,terrainWidth,canY-canY/2))
+
+  if(i == 9) {
+    circles.push(new Circle(i*terrainWidth+0.5*terrainWidth,canY/2-circleRad*2,circleRad));
+
+  }
+
+}
+}
+
+
+var terrainYOffsetTop = 1/2.5
+var terrainYOffsetBot = 1/4
+var xOffset = 1/4*canX
+var randY2 = randomNumber(terrainMaxHeight,terrainMinHeight);
+var randYPlus2 = randY2 + randomNumber(-difference,difference);
+var still = 1;
+var stillsense = 0.25;
+var inc = 0;
+var highscore;
+var highscoreArray = [];
+var tempx;
+var tempy;
+
+function draw() {
+  if (circles[0].body.position.y >= canY) {
+
+Matter.Body.setPosition(circles[0].body,{x: tempx, y: tempy});
+Matter.Body.setVelocity(circles[0].body, {x: 0, y: 0})
+
+  }
+
+
+
+
+highscore = (floor((circles[0].body.position.x-2850)/100));
+highscoreArray.push(highscore);
+
+
+
+
+if (highscoreArray[0] != max(highscoreArray)) {
+  highscoreArray.splice(0,1);
+}
+
+
+if(highscoreArray.length > 1) {
+  highscoreArray.length = 1;
+}
+console.log(tempx,tempy);
+
+  inc += 1;
+  background("#1d2951");
+
+  noStroke();
+  fill("255")
+  textAlign(CENTER);
+  textSize(50);
+
+
+  text("Score: " + max(highscoreArray),canX/2,50);
+
+  if (j*terrainWidth < circles[0].body.position.x+canX-xOffset) {
+
+if (randYPlus2 < terrainYOffsetTop*canY) {
+  randYPlus2 += random(0,difference);
+} else if (randYPlus2 > (1-terrainYOffsetBot)*canY) {
+  randYPlus2 -= random(0,difference);
+} else {randYPlus2 += random(-difference,difference);}
+
+
+
+terrainArray.push(new Terrain(j*terrainWidth,randYPlus2,terrainWidth,canY-randYPlus2))
+
+  j+=1;
+  for (var i = 0; i < terrainArray.length; i++) {
+    if (terrainArray[i].body.position.x < tempx-xOffset) {
+
+      Matter.Composite.remove(world, terrainArray[i].body)
+      terrainArray.splice(i,1);
+    }
+  }
+
+
+  }
+
+
+translate(-circles[0].body.position.x+xOffset,0)
+
+
+for (var i = 0; i < terrainArray.length; i++) {
+  terrainArray[i].show();
+
+}
+for (var i = 0; i < circles.length; i++) {
+  circles[i].show();
+}
+
+if (abs(circles[0].body.velocity.y) < stillsense && abs(circles[0].body.velocity.x) < stillsense) {
+  still = 1;
+} else {still = 0}
+
+if (pressed === 1 && still === 0) {
+  // push();
+  translate(circles[0].body.position.x-xOffset,0)
+  stroke("#000000");
+  line(oldx,oldy,mouseX,mouseY);
+
+  // pop();
+} else if (still === 1 && pressed === 1) {
+  translate(circles[0].body.position.x-xOffset,0)
+  stroke("#FFF");
+  line(oldx,oldy,mouseX,mouseY);
+}
+
+stroke(170);
+strokeWeight(4);
+line(200,canY,canX,canY);
+
+
+
+}
+
+function Terrain(x,y,w,h,options) {
+
+  rectMode(CORNER);
+
+  this.body = Bodies.rectangle(x+(1/2*w), y+(1/2*h), w, h, { isStatic: true });
+  World.add(world, this.body);
+
+  this.x = x;
+  this.y = y;
+  this.w = w;
+  this.h = h;
+  this.options = options;
+
+  this.show = function() {
+
+
+    var pos = this.body.position;
+    var angle = this.body.angle;
+
+    push();
+
+    rectMode(CENTER);
+    translate(pos.x,pos.y);
+    strokeWeight(4);
+
+    if (h > canY/3) {
+      stroke("#A88F59")
+      fill("#A88F59")
+      rect(0,0,this.w,this.h);
+    } else {
+      Matter.Composite.remove(world, this.body);
+
+    }
+    rotate(angle);
+
+    pop();
+
+  }
+
+}
+
+
+
+
+var oldX;
+
+function Circle(x,y,r) {
+  this.body = Bodies.circle(x, y, r, {restitution : 0.2});
+  World.add(world, this.body);
+  this.r = r;
+  this.show = function() {
+
+    var pos = this.body.position;
+    var angle = this.body.angle
+
+    push();
+
+    translate(pos.x,pos.y);
+    rotate(angle);
+    rectMode(CENTER);
+    strokeWeight(4);
+    stroke(255);
+    fill(127);
+    arc(0, 0, r*2, r*2, 0, PI + PI);
+    pop();
+
+
+
+
+  }
+
+}
+
+
+
+var oldx;
+var oldy;
+var newx;
+var newy;
+var delx;
+var dely;
+var mapx;
+var mapy;
+
+
+
+function mousePressed() {
+  oldx = mouseX
+  oldy = mouseY
+  pressed = 1;
+
+}
+function mouseReleased() {
+  newx = mouseX
+  newy = mouseY
+  delx = newx-oldx
+  dely = newy-oldy
+  mapx = map(delx,0,canX,0,0.5);
+  mapy = map(dely,0,canX,0,0.5);
+  pressed = 0;
+
+
+  if (abs(circles[0].body.velocity.y) < stillsense && abs(circles[0].body.velocity.x) < stillsense) {
+  Matter.Body.applyForce(circles[0].body,{x: circles[0].body.position.x, y: circles[0].body.position.y}, {x: clip(-mapx/3,-0.1,0.1), y: clip(-mapy/5,-0.025,0.025)});
+    tempx = circles[0].body.position.x;
+    tempy = circles[0].body.position.y;
+}
+
+}
+
+function clip(number, min, max) {
+  return Math.max(min, Math.min(number, max));
+}
+
+
+
+</script>

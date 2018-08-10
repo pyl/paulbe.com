@@ -102,11 +102,7 @@
 
   }
 
-  function keyPressed() {
-    if (keyCode === 82) {
-      window.location.reload(false);
-    }
-  }
+
 
   function Circle(x,y,r) {
     this.s = 15;
@@ -134,7 +130,7 @@
     this.update = function() {
 
       if (this.x < 0 || this.x > canX || this.y < 0 || this.y > canY) {
-        window.location.reload(false);
+        
       }
 
 

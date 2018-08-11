@@ -1,0 +1,256 @@
+
+
+<link rel="stylesheet" type="text/css" href="../css/project4.css">
+
+<script language = "javascript" type = "text/javascript" src="../libraries/p5.js"></script>
+
+<script language = "javascript" type = "text/javascript" src="../libraries/matter.js"></script>
+
+<script>
+
+
+
+  // module aliases
+  var Engine = Matter.Engine,
+      Render = Matter.Render,
+      World = Matter.World,
+      Bodies = Matter.Bodies;
+  var engine;
+  var world;
+  var ground;
+  var canX = window.innerWidth;
+  var canY = window.innerHeight;
+  function randomNumber(min,max)
+  {
+      return (Math.random()*(max-min+1)+min);
+  }
+
+
+  var boxArray = [];
+  var circleArray = [];
+  var sx = 0;
+  var sy = 0;
+
+  var target = {
+    x : canX/2,
+    y : canY/2,
+  }
+  var current;
+  var delta;
+  var distt;
+  var ratio;
+  var moving = 0;
+
+
+  function setup() {
+    createCanvas(canX,canY);
+    engine = Engine.create();
+    world = engine.world;
+    Engine.run(engine);
+    for (var i = 0; i < 15; i++) {
+      var randX = randomNumber(0,canX);
+      var randY = randomNumber(0,canY);
+
+      boxArray.push(new Box(random(0,canX),random(0,canY),random(30,100),random(30,100),random(0,2*PI),random(1,4)));
+    }
+
+    circle = new Circle(canX/2,canY/2,10);
+    circleArray.push(circle);
+
+  engine.world.gravity.y = 0;
+
+
+  }
+
+  function draw() {
+
+    background(150);
+    for (var i = 0; i < boxArray.length; i++) {
+      boxArray[i].update();
+      boxArray[i].show();
+    }
+    for (var i = 0; i < circleArray.length; i++) {
+      circleArray[i].show();
+      circleArray[i].update();
+    }
+
+
+
+
+  }
+
+
+  var firsthit = 1;
+  function mousePressed() {
+
+  if (firsthit === 1) {
+
+      target = {
+        x : mouseX,
+        y : mouseY,
+      }
+
+    moving = 0;
+    firsthit = 0;
+  }
+
+  for (var i = 0; i < boxArray.length; i++) {
+    boxArray[i].clicked();
+  }
+
+
+
+  }
+
+
+
+  function Circle(x,y,r) {
+    this.s = 15;
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.show = function() {
+
+
+
+      push();
+      translate(this.x,this.y);
+      rectMode(CENTER);
+      strokeWeight(4);
+      stroke(255);
+      fill(127);
+      arc(0, 0, r*2, r*2, 0, PI + PI);
+      pop();
+
+
+
+
+    }
+
+    this.update = function() {
+
+      if (this.x < 0 || this.x > canX || this.y < 0 || this.y > canY) {
+        
+      }
+
+
+
+      current = {
+        x : circle.x,
+        y : circle.y,
+      }
+      delta = {
+        x : target.x - current.x,
+        y : target.y - current.y
+      }
+      distt = sqrt( (delta.x * delta.x) + (delta.y * delta.y) );
+      ratio = this.s/distt
+
+        if (moving === 0) {
+          sx = delta.x * ratio;
+          sy = delta.y * ratio;
+          moving = 1;
+          }
+
+      if (sx > -100000) {
+          this.x += sx;
+          this.y += sy;
+
+      }
+
+
+
+    }
+  }
+
+
+  function Box(x,y,w,h,a,s) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.a = a;
+    this.s = s;
+
+    this.forbidden = 0;
+    this.timer = 1;
+    this.timerStart = 0;
+
+      this.clicked = function() {
+        if (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5) {
+          this.forbidden = 1;
+
+
+          target = {
+            x : mouseX,
+            y : mouseY,
+          }
+
+            moving = 0;
+        }
+      }
+
+    this.update = function() {
+        this.x += this.s*Math.sin(this.a);
+        this.y -= this.s*Math.cos(this.a);
+
+        if (this.x < 0 || this.x > canX) {
+          this.a *= -1;
+        }
+        if (this.y < 0 || this.y > canY) {
+          this.a = PI-this.a;
+        }
+
+        if (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5 && this.forbidden != 1) {
+          circle.x = this.x;
+          circle.y = this.y;
+          sx = 0;
+          sy = 0;
+          this.timerStart = 1;
+
+
+
+          for (var i = 0; i < boxArray.length; i ++) {
+            boxArray[i].forbidden = 0;
+          }
+        }
+
+
+        if (this.timer < 0) {
+
+          if (this.x === circle.x && this.y === circle.y) {
+            circle.x = -9999
+            circle.y = -9999
+          }
+          this.x = -9999;
+          this.y9999 = -9999;
+        }
+      }
+
+
+
+    this.show = function() {
+
+      push();
+
+      translate(this.x,this.y);
+      rectMode(CENTER);
+      fill(127);
+      rect(0,0,w,h);
+      pop();
+
+      if (this.timerStart === 1) {
+        //o.o3
+        this.timer -= 0.025;
+        fill(0,255,0);
+        rect(this.x-this.w/2,this.y-this.h/2,(1-this.timer)*this.w,this.h)
+      }
+
+
+    }
+
+
+  }
+
+
+</script>

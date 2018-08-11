@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+html {
+  margin: 0;
+  overflow: hidden;
+}
+
+canvas#canvas {
+  background: #e2e1d2;
+}
+
+h1 {
+  position: absolute;
+}
+
+a {
+  position: absolute;
+}

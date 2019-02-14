@@ -1,0 +1,325 @@
+<link rel="stylesheet" type="text/css" href="../css/project6.css">
+<script language = "javascript" type = "text/javascript" src="../libraries/p5.js"></script>
+<script language = "javascript" type = "text/javascript" src="../libraries/matter.js"></script>
+
+
+<script>
+  var Engine = Matter.Engine,
+      // Render = Matter.Render,
+      World = Matter.World,
+      Events = Matter.Events,
+      Bodies = Matter.Bodies;
+
+
+
+
+  var canX = window.innerWidth;
+  var canY = window.innerHeight;
+  var bigCircle = {
+      x: canX/2,
+      y: canY/2,
+      r: 800
+    }
+      var p1RectO = {
+        w: 120,
+        h: 5,
+        a: Math.PI/3,
+        type: "p1",
+        color: '#0000FF'
+      }
+      var p2RectO = {
+          w: 120,
+          h: 5,
+          a: -Math.PI/2,
+          type: "p2",
+          color: '#FF0000'
+      }
+
+
+
+var engine;
+var p1Rect;
+var p2Rect;
+var direction;
+var wasddirection;
+var world;
+var sb;
+var anglebefore;
+function toDegrees (angle) {
+  return angle * (180 / Math.PI);
+}
+function toRadians (angle) {
+  return angle * (Math.PI / 180);
+}
+
+function calcAngleDegrees(x, y) {
+  return Math.atan2(y, x) * 180 / Math.PI;
+}
+
+function collision(event) {
+
+
+  for (var i = 0; i < event.pairs.length; i++) {
+    var bodyA = event.pairs[i].bodyA;
+    var bodyB = event.pairs[i].bodyB;
+    anglebefore = calcAngleDegrees(bodyB.velocity.x,-bodyB.velocity.y);
+
+
+  }
+
+
+
+}
+
+function collisionend(event) {
+      for (var i = 0; i < event.pairs.length; i++) {
+        var bodyA = event.pairs[i].bodyA;
+        var bodyB = event.pairs[i].bodyB;
+        // console.log(bodyB.velocity, "after")
+        var angleafter = calcAngleDegrees(bodyB.velocity.x,-bodyB.velocity.y)
+        var angleafterfr = calcAngleDegrees(bodyB.velocity.x,bodyB.velocity.y)
+
+      }
+
+    if (((bodyA.label === "p2" || bodyA.label === "p1") && bodyB.label === "smallball") && (Math.abs(angleafter-anglebefore) > 130)) {
+      sb.color = bodyA.color;
+      console.log(angleafter);
+      for(var i = 0; i < 30; i++) {
+        new EXPLODEBALL(bodyB.position.x,bodyB.position.y,angleafterfr,bodyA.color);
+      }
+
+
+    }
+}
+
+function setup() {
+  engine = Engine.create();
+  world = engine.world;
+  Engine.run(engine);
+
+  var options = {
+    isStatic : true
+  }
+  rectMode(CENTER);
+  createCanvas(canX,canY);
+  p1Rect = new P1(p1RectO.w,p1RectO.h,p1RectO.a,p1RectO.type, p1RectO.color);
+  p2Rect = new P1(p2RectO.w,p2RectO.h,p2RectO.a,p1RectO.type, p2RectO.color);
+  sb = new SMALLBALL();
+  engine.world.gravity.y = 0;
+  engine.world.gravity.x = 0;
+
+  Events.on(engine, 'collisionStart', collision);
+  Events.on(engine, 'collisionEnd', collisionend);
+
+}
+
+var mp = 1;
+
+function draw() {
+
+  // console.log(sb.color)
+  background(255);
+
+  arc(bigCircle.x,bigCircle.y,bigCircle.r,bigCircle.r,0,PI*2);
+  p1Rect.update();
+  p1Rect.show();
+  p2Rect.update();
+  p2Rect.show();
+  for (var i = 0; i < expballArray.length; i++) {
+
+    expballArray[i].show();
+    expballArray[i].update();
+  }
+  sb.update();
+  sb.show();
+
+  if (keyIsDown(65)) {
+    // p1Rect.a += 0.048;
+    p1Rect.a = lerp(p1Rect.a, p1Rect.a + 2.5, 0.02);
+  }
+  if (keyIsDown(68)) {
+    // p1Rect.a -= 0.048;
+    p1Rect.a = lerp(p1Rect.a, p1Rect.a - 2.5, 0.02);
+  }
+  // if (keyIsDown(87)) {
+  //   p1Rect.w = lerp(p1Rect.w,p1RectO.w+100,0.2);
+  //   p1Rect.centerOffset = lerp(p1Rect.centerOffset,0.9,0.00);
+  // } else {
+  //   p1Rect.w = lerp(p1Rect.w,p1RectO.w,0.2);
+  //   p1Rect.centerOffset = lerp(p1Rect.centerOffset,1,0.00);
+  // }
+  if (mp === 0) {
+  if (keyIsDown(LEFT_ARROW)) {
+    p2Rect.a -= 0.048;
+    // p2Rect.a = lerp(p2Rect.a, p2Rect.a + 50, 0.02);
+  }
+  if (keyIsDown(RIGHT_ARROW)) {
+    p2Rect.a += 0.048;
+  }
+} else {
+//0.048
+
+    if (p2Rect.x < sb.body.position.x) {
+    p2Rect.a = lerp(p2Rect.a, p2Rect.a + 2.5, 0.02);
+  } else if (p2Rect.x > sb.body.position.x) {
+    p2Rect.a = lerp(p2Rect.a, p2Rect.a - 2.5, 0.02);
+  }
+
+
+}
+  // if (keyIsDown(UP_ARROW)) {
+  //   p2Rect.w = lerp(p2Rect.w,p2RectO.w+100,0.2);
+  //   p2Rect.centerOffset = lerp(p2Rect.centerOffset,0.9,0.00);
+  //   Matter.Body.scale(p2Rect.body, 1.1, 1.1);
+  // } else {
+  //   p2Rect.w = lerp(p2Rect.w,p2RectO.w,0.2);
+  //   p2Rect.centerOffset = lerp(p2Rect.centerOffset,1,0.00);
+  //   // Matter.Body.scale(p2Rect.body, 1, 1);
+  // }
+
+}
+function P1(w,h,a, type, color) {
+
+
+  this.centerOffset = 1;
+  this.x;
+  this.y;
+  this.w = w;
+  this.h = h;
+  this.a = a;
+  this.color = color;
+  this.type = type;
+  rectMode(CENTER);
+  this.body = Bodies.rectangle(0,0,this.w,this.h,{isStatic: true, friction: 0, restitution: 1});
+  this.body.label = this.type;
+  this.body.color = this.color;
+
+  World.add(world, this.body);
+  this.show = function() {
+
+  }
+  this.update = function() {
+
+
+
+    // this.a += 0.01;
+    // this.x += 1;
+    push();
+    this.x = (Math.cos(this.a)*bigCircle.r/2*this.centerOffset)+bigCircle.x;
+    this.y = (Math.sin(this.a)*bigCircle.r/2*this.centerOffset)+bigCircle.y;
+    pop();
+    // this.body.position.x = this.x;
+    // this.body.position.y = this.y;
+    Matter.Body.setPosition(this.body,{x: this.x, y: this.y});
+    Matter.Body.setAngle(this.body, PI/2+this.a);
+
+    push();
+
+
+    fill(this.color);
+    translate(this.body.position.x,this.body.position.y)
+    rotate(this.body.angle);
+
+    rect(0,0,this.w,this.h);
+
+    pop();
+  }
+}
+
+
+function SMALLBALL() {
+  this.color = '#FFFFFF';
+  this.x = canX/2-50;
+  this.y = canY/2;
+  this.r = 35;
+  this.randomAngle = Math.random()*2*Math.PI;
+  this.sx = Math.cos(this.randomAngle)*5;
+  this.sy = Math.sin(this.randomAngle)*5;
+
+  this.body = Bodies.circle(this.x,this.y,this.r/2, {
+    inertia: Infinity,
+    restitution: 1,
+    friction: 0,
+    frictionAir: 0,
+    frictionStatic: 0});
+  World.add(world, this.body);
+  this.body.label = "smallball";
+
+  Matter.Body.applyForce(this.body, {x: this.body.position.x, y: this.body.position.y}, {x: 0.02, y: 0.02})
+
+  this.show = function(){
+    push();
+    fill(this.color);
+    arc(this.body.position.x,this.body.position.y,this.r,this.r,0,PI*2);
+    pop();
+  }
+  this.update = function(){
+
+  }
+}
+var expballArray = [];
+function EXPLODEBALL(x,y,a,c) {
+  this.x = x;
+  this.y = y;
+  this.a = a;
+  this.color = color(c);
+  this.r = 10;
+  this.alpha = 100;
+  console.log(this.a)
+  this.sx = Math.cos(toRadians(this.a))*4+random(-1*Math.PI,1*Math.PI);
+  this.sy = Math.sin(toRadians(this.a))*4+random(-1*Math.PI,1*Math.PI);
+  expballArray.push(this);
+
+
+  this.show = function() {
+    push();
+    noStroke();
+    this.color.setAlpha(this.alpha);
+    fill(this.color);
+
+    console.log(this.alpha)
+    arc(this.x,this.y,this.r,this.r,0,PI*2);
+    pop();
+
+  }
+  this.update = function() {
+    this.x += this.sx;
+    this.y += this.sy;
+
+    this.alpha -= 3;
+
+    if(this.alpha <= 0) {
+      expballArray.splice(expballArray.indexOf(this),1);
+    }
+  }
+}
+
+function keyPressed() {
+  switch (keyCode) {
+    case 37:
+        direction = 'left';
+      break;
+    case 39:
+        direction = 'right';
+      break;
+
+    default:
+        direction = 0;
+        break;
+
+  }
+  switch (keyCode) {
+    case 68:
+        wasddirection = 'wasdright';
+      break;
+    case 65:
+        wasddirection = 'wasdleft';
+      break;
+    default:
+      wasddirection = 0;
+      break;
+}
+}
+
+
+</script>

@@ -1,0 +1,122 @@
+<link rel="stylesheet" type="text/css" href="../css/project5.css">
+<script language = "javascript" type = "text/javascript" src="../libraries/p5.js"></script>
+<script language = "javascript" type = "text/javascript" src="../libraries/matter.js"></script>
+
+
+<script>
+
+var canX = window.innerWidth;
+var canY = window.innerHeight;
+
+function setup() {
+  createCanvas(canX,canY);
+    for (var i = 0; i < mappLengthY; i++) {
+      for (var j = 0; j < mappLengthX; j++) {
+        BlockArray.push(new Block(j,i,unitWidthX,unitWidthY,mapp[i][j]))
+
+      }
+    }
+}
+
+var mapp = [
+          [1,1,0,1,1,0],
+          [0,0,0,2,0,2],
+          [0,1,2,0,0,0],
+          [0,0,0,0,0,0],
+          ]
+
+var unitWidthX = 200;
+var unitWidthY = 200;
+var mappLengthX = mapp[0].length;
+var mappLengthY = mapp.length;
+
+
+
+function draw() {
+  background(255);
+
+  for (var i = 0; i < BlockArray.length; i++) {
+    BlockArray[i].draw();
+    BlockArray[i].update();
+
+}
+
+}
+
+var BlockArray = [];
+var BlackBlockArray = [];
+var BlackBlockArrayJ = [];
+var BlackBlockArrayI = [];
+var onGroundArray = [];
+function Block(j,i,w,h,type) {
+  this.j = j;
+  this.i = i;
+  this.w = w;
+  this.h = h;
+  this.type = type;
+  this.onGround = 0;
+  this.added = 0;
+  this.below = 0;
+  this.tempColumnArray =[];
+  if (this.type === 2) {
+      BlackBlockArray.push(this);
+      BlackBlockArrayJ.push(this.j);
+      BlackBlockArrayI.push(this.i);
+      this.onGround = 1;
+    }
+
+
+
+  this.draw = function() {
+    fill(0);
+    if (this.type === 1) {
+      stroke(0)
+      fill(100,100,0);
+    }
+    if(this.type === 0) {
+      noStroke();
+      fill(150,150,150,0);
+    }
+
+    rect(this.j*unitWidthX,this.i*unitWidthY,this.w,this.h);
+  }
+
+
+  this.getBelow = function() {
+
+  }
+
+
+  this.update = function() {
+
+
+
+
+      this.getBelow();
+
+
+
+
+      for (var i = 0; i < BlackBlockArrayJ.length; i++) {
+        if (
+            // BlackBlockArrayJ.indexOf(this.j) !== -1 &&
+            !BlackBlockArrayJ.includes(this.j) &&
+            this.type === 1 &&
+            this.i <= 1
+        ) {
+          this.onGround = 0;
+        } else {
+          this.onGround = 1;
+        }
+      }
+
+      if (this.type === 1 && this.onGround === 0) {
+        this.i = this.i + 0.01;
+      }
+    }
+}
+
+
+
+
+</script>

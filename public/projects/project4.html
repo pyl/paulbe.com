@@ -28,9 +28,11 @@
 
   var boxArray = [];
   var circleArray = [];
+  var deathBoxArray = [];
+
+
   var sx = 0;
   var sy = 0;
-
   var target = {
     x : canX/2,
     y : canY/2,
@@ -40,34 +42,128 @@
   var distt;
   var ratio;
   var moving = 0;
+  var dif = 4;
+  var highscore = 0;
+  var highscoreArray = [];
+  var raffle = [];
+  var aliveArray = [];
 
+  var choices = {
+    default : {
+      chance : 85
+    },
+    golden : {
+      chance : 5
+    },
+    away : {
+      chance: 5
+    },
+    deathBox : {
+      chance: 5
+    }
+  }
 
   function setup() {
     createCanvas(canX,canY);
     engine = Engine.create();
     world = engine.world;
     Engine.run(engine);
-    for (var i = 0; i < 15; i++) {
-      var randX = randomNumber(0,canX);
-      var randY = randomNumber(0,canY);
 
-      boxArray.push(new Box(random(0,canX),random(0,canY),random(30,100),random(30,100),random(0,2*PI),random(1,4)));
-    }
 
     circle = new Circle(canX/2,canY/2,10);
     circleArray.push(circle);
 
   engine.world.gravity.y = 0;
-
+  init();
 
   }
+var firsthit = 1;
+
+function init() {
+  circle.x = canX/2
+  circle.y = canY/2
+  sx = 0;
+  sy = 0;
+  firsthit = 1;
+
+  for (var i = 0; i < raffle.length; i++) {
+
+  raffle.splice(i,1);
+  }
+
+  deathBoxArray.splice(0,deathBoxArray.length);
+  boxArray.splice(0,boxArray.length);
+  aliveArray.splice(0,aliveArray.length);
+  deadArray.splice(0,deadArray.length);
+
+  for (var i = 0; i < dif; i++) {
+        var randX = randomNumber(0,canX);
+        var randY = randomNumber(0,canY);
+        var bw = 100
+        var bh = 100
+
+
+
+        for (var j = 0; j < choices.default.chance; j++) {
+          raffle.push(choices.default)
+        }
+        for (var j = 0; j < choices.golden.chance; j++) {
+          raffle.push(choices.golden)
+        }
+        for (var j = 0; j < choices.away.chance; j++) {
+          raffle.push(choices.away)
+        }
+        if (dif > 1) {
+        for (var j = 0; j < choices.deathBox.chance; j++) {
+          raffle.push(choices.deathBox)
+        }
+        }
+        var choice = raffle[Math.floor(Math.random() * raffle.length)];
+
+
+
+
+
+        boxArray.push(new Box(random(0+bw/2,canX-bw/2),random(0+bh/2,canY-bh/2),bw,bh,random(0,2*PI),2+(dif/8),choice));
+
+      }
+}
 
   function draw() {
 
+  if (circle.x < 0 || circle.x > canX || circle.y < 0 || circle.y > canY) {
+  if (dif > 1) {
+    dif -= 1;
+  }
+
+  init();
+  }
+
+  function getHighscore() {
+    highscore = dif;
+    highscoreArray.push(highscore);
+    if (highscoreArray[0] != max(highscoreArray)) {
+      highscoreArray.splice(0,1);
+    }
+    if(highscoreArray.length > 1) {
+      highscoreArray.length = 1;
+    }
+    return max(highscoreArray);
+  }
+
+
+
     background(150);
+    textSize(20);
+    textAlign(CENTER);
+    fill("black");
+    text("Difficulty: " + (dif), canX/2, 100);
+    text("Highscore: " + (getHighscore()), canX/2, 200);
     for (var i = 0; i < boxArray.length; i++) {
+
       boxArray[i].update();
       boxArray[i].show();
+
     }
     for (var i = 0; i < circleArray.length; i++) {
       circleArray[i].show();
@@ -79,8 +175,6 @@
 
   }
 
-
-  var firsthit = 1;
   function mousePressed() {
 
   if (firsthit === 1) {
@@ -155,29 +249,44 @@
       if (sx > -100000) {
           this.x += sx;
           this.y += sy;
-
       }
 
 
 
     }
   }
+  var selectableArray = [];
+  var deadArray = [];
+  var selected;
 
-
-  function Box(x,y,w,h,a,s) {
+  function Box(x,y,w,h,a,s,choice) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
     this.a = a;
     this.s = s;
-
+    this.d = 0;
+    this.choice = choice;
     this.forbidden = 0;
     this.timer = 1;
     this.timerStart = 0;
+    this.dx = 0;
+    this.dy = 0;
+    this.on = 1;
+    this.on2 = 1;
+    this.ghostBoxAbility = 0;
+    this.alpha = 255;
+
+    aliveArray.push(this);
+    if (this.choice === choices.deathBox) {
+      deathBoxArray.push(this)
+    }
+
 
       this.clicked = function() {
-        if (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5) {
+
+        if ((circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5 && this.ghostBoxAbility === 0)|| (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5 && this === selected)) {
           this.forbidden = 1;
 
 
@@ -187,26 +296,115 @@
           }
 
             moving = 0;
+
+
+
+        if(this.on === 1) {
+
+      }
+            if(this.choice === choices.deathBox && this.on === 1) {
+
+            for (var i = 0; i < boxArray.length; i++) {
+              boxArray[i].ghostBoxAbility = 1;
+            }
+
+
+
+            this.on = 0;
+            }
+
+
+
         }
+
+
+
+
+
       }
 
     this.update = function() {
+
+        if (this.ghostBoxAbility === 1) {
+
+        }
+
+
+
+        if (this.d != 1) {
         this.x += this.s*Math.sin(this.a);
         this.y -= this.s*Math.cos(this.a);
 
-        if (this.x < 0 || this.x > canX) {
+        if (this.x - this.w/2 < 0 || this.x + this.w/2 > canX) {
           this.a *= -1;
         }
-        if (this.y < 0 || this.y > canY) {
+        if (this.y - this.h/2< 0 || this.y+this.h/2 > canY) {
           this.a = PI-this.a;
         }
 
-        if (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5 && this.forbidden != 1) {
+        if (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5 && this.forbidden != 1 && firsthit === 0 && this.ghostBoxAbility === 0 || (circle.x <= this.x + this.w*0.5 && circle.x >= this.x - this.w*0.5 && circle.y >= this.y-this.h*0.5 && circle.y <= this.y + this.h*0.5 && this.forbidden != 1 && firsthit === 0 && this === selected)) {
+
           circle.x = this.x;
           circle.y = this.y;
           sx = 0;
           sy = 0;
           this.timerStart = 1;
+
+
+          if (this === selected) {
+            for (var i = 0; i < boxArray.length; i++) {
+
+              boxArray[i].s = 1.5;
+
+              boxArray[i].ghostBoxAbility = 0;
+              boxArray[i].alpha = 255;
+            }
+            selected === null;
+          }
+
+        if(this.choice === choices.away && this.on === 1) {
+          //on collision with purple box
+
+          this.s = 0;
+          for (var i = 0; i < boxArray.length; i++) {
+            boxArray[i].a = Math.atan2(boxArray[i].y-circle.y,boxArray[i].x-circle.x)+PI/2
+          }
+
+          this.on = 0;
+        }
+        if (aliveArray.length > 1) {
+        if(this.choice === choices.deathBox && this.on2 === 1) {
+          //on collision with deathbox
+          for (var i = 0; i < aliveArray.length; i++) {
+            if (this != aliveArray[i])
+            selectableArray.push(aliveArray[i])
+          }
+
+          selected = selectableArray[Math.floor(Math.random() * selectableArray.length)]
+          console.log(selectableArray)
+          selectableArray.splice(0,selectableArray.length);
+
+
+
+          for (var i = 0; i < boxArray.length; i++) {
+            if (boxArray[i] != this) {
+            boxArray[i].alpha = 0;
+            }
+            if (boxArray[i] === selected) {
+
+              boxArray[i].alpha = 255;
+
+            }
+          }
+          this.on2 = 0;
+
+        }
+      }
+
+
+
+
+
 
 
 
@@ -216,39 +414,79 @@
         }
 
 
-        if (this.timer < 0) {
 
-          if (this.x === circle.x && this.y === circle.y) {
-            circle.x = -9999
-            circle.y = -9999
-          }
-          this.x = -9999;
-          this.y9999 = -9999;
+        if (this.timer < 0) {
+          this.d = 1;
+          deadArray.push(this)
+          aliveArray.splice(aliveArray.indexOf(this),1);
         }
+
+        if (deadArray.length === boxArray.length) {
+          dif += 2;
+          init();
+        }
+
+
+
+
+        if (this.d === 1) {
+        if (this.x === circle.x && this.y === circle.y) {
+          circle.x = -9999
+          circle.y = -9999
+
+
+
+        }
+
+      }
+      }
       }
 
-
-
     this.show = function() {
+
+      if (this.d != 1) {
 
       push();
 
       translate(this.x,this.y);
       rectMode(CENTER);
-      fill(127);
-      rect(0,0,w,h);
+      fill(color(127,127,127,this.alpha));
+      if (this.choice === choices.golden) {
+        fill(color(255,215,0,this.alpha));
+      }
+      if (this.choice === choices.away) {
+        fill(color(149,131,171,this.alpha))
+      }
+      if (this.choice === choices.deathBox) {
+        alpha(0)
+        fill(color(0,0,0,this.alpha))
+      }
+      if (this === selected) {
+        fill(255,255,255);
+      }
+      rect(0,0,this.w,this.h);
       pop();
 
       if (this.timerStart === 1) {
         //o.o3
-        this.timer -= 0.025;
-        fill(0,255,0);
+
+
+        if (this.choice === choices.default || this.choice === choices.away || this.choice === choices.deathBox) {
+          this.timer -= 0.027 + dif/2000;
+        }
+        if (this.choice === choices.golden) {
+          this.timer -= 0.005;
+        }
+
+        fill(color(0,255,0,this.alpha));
+        if(1-this.timer*this.w < 0) {
         rect(this.x-this.w/2,this.y-this.h/2,(1-this.timer)*this.w,this.h)
       }
+      }
+    }
 
 
     }
-
 
   }
 
